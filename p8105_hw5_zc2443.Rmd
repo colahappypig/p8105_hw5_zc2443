@@ -35,3 +35,29 @@ replace_missing = function(vec) {
 map(iris_with_missing, replace_missing)
 ```
 
+# Problem 2
+
+```{r}
+tibble(list.files("./data")) %>% 
+  rename(file_name = `list.files("./data")`) %>%
+  mutate(tran = "./data/", tran2 = str_c(tran, file_name) ,data = map(tran2, read.csv)) %>% 
+  unnest() %>% 
+  mutate(file_name = str_replace(file_name, "\\_", " ")) %>% 
+  mutate(file_name = str_replace(file_name, ".csv", "")) %>% 
+  rename(arm_id = file_name) %>% 
+  select(-tran, -tran2) %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    names_prefix = "week_",
+    values_to = "value") %>% 
+  mutate(value = round(value, digits = 2)) %>% 
+  ggplot(aes(x = week, y = value, group = arm_id, color = arm_id)) +
+  geom_path() + 
+  labs(caption = "Observations on each subject over time",
+       x = "Week",
+       y = "Observations") +
+  viridis::scale_color_viridis(discrete = TRUE)
+```
+
+From the spaghetti plot we can see that observations for subjects in experimental arm are increasing over time. However, the observations for subjects in control arm are fluctuating around some fix values over time.
